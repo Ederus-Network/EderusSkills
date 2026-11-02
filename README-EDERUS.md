@@ -6,7 +6,7 @@ Fork de [AuraSkills](https://github.com/Archy-X/AuraSkills) (GPL-3.0) con los ar
 
 - `ederus`: nuestra rama, sale de la etiqueta oficial de la versión que usamos (ahora `2.3.12`).
 - `upstream`: el repositorio original de Archy-X.
-- `origin`: https://github.com/Ederus-Network/AuraSkills
+- `origin`: https://github.com/Ederus-Network/EderusSkills
 
 La versión del jar lleva el sufijo `-ederusN` (`projectVersion` en `gradle.properties`), así que en consola sale como `Enabling AuraSkills v2.3.12-ederus1`.
 
