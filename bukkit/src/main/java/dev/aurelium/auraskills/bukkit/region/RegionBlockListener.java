@@ -17,17 +17,27 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockFertilizeEvent;
+import org.bukkit.event.block.BlockGrowEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.BlockSpreadEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.world.StructureGrowEvent;
 
+import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Predicate;
 
 public class RegionBlockListener implements Listener {
+
+    // Plants that grow as a column and pop when the block below them is removed.
+    // BlockLevelerHelper counts these upwards and stops at the first placed block,
+    // so a stale placed mark inside a column cuts the XP of every block above it.
+    private static final EnumSet<Material> TALL_PLANTS = EnumSet.of(
+            Material.SUGAR_CANE, Material.BAMBOO, Material.BAMBOO_SAPLING, Material.CACTUS,
+            Material.KELP, Material.KELP_PLANT);
 
     private final AuraSkills plugin;
     private final BukkitRegionManager regionManager;
@@ -94,9 +104,7 @@ public class RegionBlockListener implements Listener {
         if (event.isCancelled()) return;
         Block block = event.getBlock();
         regionManager.removePlacedBlock(block);
-        checkTallPlant(block, 0, mat -> mat == Material.SUGAR_CANE);
-        checkTallPlant(block, 0, mat -> mat == Material.BAMBOO);
-        checkTallPlant(block, 0, mat -> mat == Material.CACTUS);
+        clearPlantColumnAbove(block);
         checkSupportBelow(block);
         checkSupportSide(block);
     }
@@ -134,16 +142,62 @@ public class RegionBlockListener implements Listener {
         }
     }
 
-    private void checkTallPlant(Block block, int num, Predicate<Material> isMaterial) {
-        if (num < 20) {
-            Block above = block.getRelative(BlockFace.UP);
-            if (isMaterial.test(above.getType())) {
-                if (regionManager.isPlacedBlock(above)) {
-                    regionManager.removePlacedBlock(above);
-                    checkTallPlant(above, num + 1, isMaterial);
-                }
-            }
+    // A tall plant that grows into a spot was never placed there, so any mark left on that spot
+    // is stale (the block placed there earlier was removed without a player breaking it).
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlantGrow(BlockGrowEvent event) {
+        clearIfGrownInto(event.getBlock(), event.getNewState().getType());
+    }
+
+    // Kelp and bamboo grow through BlockSpreadEvent instead of BlockGrowEvent
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlantSpread(BlockSpreadEvent event) {
+        clearIfGrownInto(event.getBlock(), event.getNewState().getType());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlantFertilize(BlockFertilizeEvent event) {
+        for (BlockState state : event.getBlocks()) {
+            clearIfGrownInto(state.getBlock(), state.getType());
         }
+    }
+
+    private void clearIfGrownInto(Block block, Material newType) {
+        if (!TALL_PLANTS.contains(newType)) return;
+        // Only new blocks: a plant that is already there (like a placed bamboo base whose
+        // leaves change when bone mealed) keeps its mark
+        if (TALL_PLANTS.contains(block.getType())) return;
+        if (regionManager.isPlacedBlock(block)) {
+            regionManager.removePlacedBlock(block);
+        }
+    }
+
+    /**
+     * Clears the placed marks of the whole plant column above a broken block, since every block
+     * of it pops with the broken one. The walk does not stop at blocks without a mark: a column
+     * often mixes grown and placed blocks (a placed base, or kelp placed on top of grown kelp),
+     * and stopping at the first grown block left the marks above it on spots that are now empty,
+     * where they cut the count of the next column that grows through them.
+     *
+     * @param block The broken block
+     */
+    private void clearPlantColumnAbove(Block block) {
+        Block above = block.getRelative(BlockFace.UP);
+        Material type = above.getType();
+        if (!TALL_PLANTS.contains(type)) return;
+        boolean kelp = type == Material.KELP || type == Material.KELP_PLANT;
+        int maxY = block.getWorld().getMaxHeight();
+        while (above.getY() < maxY && isSamePlant(above.getType(), type, kelp)) {
+            regionManager.removePlacedBlock(above);
+            above = above.getRelative(BlockFace.UP);
+        }
+    }
+
+    private boolean isSamePlant(Material current, Material first, boolean kelp) {
+        if (kelp) {
+            return current == Material.KELP || current == Material.KELP_PLANT;
+        }
+        return current == first;
     }
 
     private void checkSupportBelow(Block block) {
