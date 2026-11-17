@@ -8,8 +8,10 @@ import dev.aurelium.auraskills.bukkit.item.TraitModifiers;
 import dev.aurelium.auraskills.bukkit.item.UserEquipment;
 import dev.aurelium.auraskills.common.api.implementation.ApiSkillsUser;
 import dev.aurelium.auraskills.common.user.User;
+import dev.aurelium.auraskills.paper.util.AdventureUtil;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.jetbrains.annotations.NotNull;
@@ -78,7 +80,7 @@ public class BukkitUser extends User {
             return;
         }
         if (player != null) {
-            plugin.getAudiences().player(player).sendMessage(component);
+            AdventureUtil.sendMessage(player, component, plugin.getAudiences());
         }
     }
 
@@ -236,6 +238,13 @@ public class BukkitUser extends User {
             }
         }
         return true;
+    }
+
+    @Override
+    public void playSound(String sound, String category, float volume, float pitch) {
+        if (player != null) {
+            player.playSound(player.getLocation(), sound, SoundCategory.valueOf(category.toUpperCase(Locale.ROOT)), volume, pitch);
+        }
     }
 
     @Override

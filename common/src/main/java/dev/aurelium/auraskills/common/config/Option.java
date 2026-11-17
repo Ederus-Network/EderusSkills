@@ -89,6 +89,7 @@ public enum Option {
     DAMAGE_HOLOGRAMS_SCALING("damage_holograms.scaling", OptionType.BOOLEAN),
     DAMAGE_HOLOGRAMS_DECIMAL_MAX("damage_holograms.decimal.max_amount", OptionType.INT),
     DAMAGE_HOLOGRAMS_DECIMAL_LESS_THAN("damage_holograms.decimal.display_when_less_than", OptionType.INT),
+    DAMAGE_HOLOGRAMS_MIN_DAMAGE("damage_holograms.min_damage", OptionType.DOUBLE),
     DAMAGE_HOLOGRAMS_OFFSET_X("damage_holograms.offset.x", OptionType.DOUBLE),
     DAMAGE_HOLOGRAMS_OFFSET_Y("damage_holograms.offset.y", OptionType.DOUBLE),
     DAMAGE_HOLOGRAMS_OFFSET_Z("damage_holograms.offset.z", OptionType.DOUBLE),
@@ -174,6 +175,8 @@ public enum Option {
     AUTOMATIC_BACKUPS_ENABLED("automatic_backups.enabled", OptionType.BOOLEAN),
     AUTOMATIC_BACKUPS_MINIMUM_INTERVAL_HOURS("automatic_backups.minimum_interval_hours", OptionType.DOUBLE),
     AUTOMATIC_BACKUPS_MAX_USERS("automatic_backups.max_users", OptionType.INT),
+    AUTOMATIC_BACKUPS_DELETE_OLD_BACKUPS("automatic_backups.delete_old_backups", OptionType.BOOLEAN),
+    AUTOMATIC_BACKUPS_DELETE_OLDER_THAN_DAYS("automatic_backups.delete_older_than_days", OptionType.INT),
     SAVE_BLANK_PROFILES("save_blank_profiles", OptionType.BOOLEAN);
 
     private final String path;

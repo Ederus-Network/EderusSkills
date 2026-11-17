@@ -2,13 +2,16 @@ package dev.aurelium.auraskills.bukkit.ui;
 
 import dev.aurelium.auraskills.api.skill.Skill;
 import dev.aurelium.auraskills.bukkit.AuraSkills;
+import dev.aurelium.auraskills.bukkit.hooks.PacketEventsHook;
 import dev.aurelium.auraskills.bukkit.hooks.ProtocolLibHook;
 import dev.aurelium.auraskills.bukkit.user.BukkitUser;
 import dev.aurelium.auraskills.common.ui.ActionBarManager;
 import dev.aurelium.auraskills.common.ui.UiProvider;
 import dev.aurelium.auraskills.common.user.User;
+import dev.aurelium.auraskills.paper.util.AdventureUtil;
 import dev.aurelium.slate.text.TextFormatter;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.title.Title;
 import net.kyori.adventure.title.Title.Times;
 import net.md_5.bungee.api.ChatMessageType;
@@ -24,6 +27,10 @@ public class BukkitUiProvider implements UiProvider {
     private final ActionBarManager actionBarManager;
     private final BossBarManager bossBarManager;
     private final TextFormatter tf = new TextFormatter();
+    private final LegacyComponentSerializer legacySerializer = LegacyComponentSerializer.builder()
+            .hexColors()
+            .useUnusualXRepeatedCharacterHexFormat()
+            .build();
 
     public BukkitUiProvider(AuraSkills plugin) {
         this.plugin = plugin;
@@ -56,7 +63,11 @@ public class BukkitUiProvider implements UiProvider {
         Player player = ((BukkitUser) user).getPlayer();
         if (player == null) return;
 
-        if (plugin.getHookManager().isRegistered(ProtocolLibHook.class)) {
+        if (plugin.getHookManager().isRegistered(PacketEventsHook.class)) {
+            PacketEventsHook hook = plugin.getHookManager().getHook(PacketEventsHook.class);
+
+            hook.sendActionBar(player, legacySerializer.deserialize(message));
+        } else if (plugin.getHookManager().isRegistered(ProtocolLibHook.class)) {
             ProtocolLibHook hook = plugin.getHookManager().getHook(ProtocolLibHook.class);
             hook.sendActionBar(player, message);
         } else {
@@ -81,8 +92,11 @@ public class BukkitUiProvider implements UiProvider {
         int fadeInMs = fadeIn * 50;
         int stayMs = stay * 50;
         int fadeOutMs = fadeOut * 50;
-        plugin.getAudiences().player(player).showTitle(Title.title(cTitle, cSubtitle,
-                Times.times(Duration.ofMillis(fadeInMs), Duration.ofMillis(stayMs), Duration.ofMillis(fadeOutMs))));
+
+        Title titleObj = Title.title(cTitle, cSubtitle,
+                Times.times(Duration.ofMillis(fadeInMs), Duration.ofMillis(stayMs), Duration.ofMillis(fadeOutMs)));
+
+        AdventureUtil.showTitle(player, titleObj, plugin.getAudiences());
     }
 
 }

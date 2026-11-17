@@ -6,7 +6,7 @@ description: Frequently-asked questions
 
 ### How do I remove the health and mana display above the hotbar?
 
-Set `action_bar.idle` to false in config.yml.
+Set `action_bar.idle` to false in config.yml to fully disable it. Alternatively, players can toggle it individually using `/abtoggle`.
 
 ### How do I prevent duplicated XP and items from placed blocks?
 
@@ -38,7 +38,9 @@ To uninstall, put the plugin back and run `skills resethealth` in the console wh
 
 ### Why do I not have the right amount of extra hearts on my screen when my HP is high enough?
 
-Visual hearts are scaled, meaning it takes more HP to get each additional heart. Your actual health matches the HP value on the action bar. This is enabled to prevent hearts from blocking the screen at high health stats. You can disable this by setting `health.health-scaling` to false in config.yml
+Visual hearts are scaled, meaning it takes more HP to for each additional heart to appear.
+Your actual health matches the HP value on the action bar. This is enabled to prevent hearts from blocking the screen
+at high HP values. You can disable this by setting `traits.auraskills/hp.health_scaling` to false in stats.yml.
 
 ### How do I migrate from YAML file to MySQL database storage?
 
@@ -52,8 +54,19 @@ See the [XP Multipliers page](skills/xp-multipliers.md) for more details.
 
 ### What server software is supported?
 
-Only Spigot and Paper are officially supported, but many Paper forks like Purpur will likely work. CraftBukkit and modded hybrid servers (Arclight, Mohist, etc) are not supported.
+Paper, Spigot, and Purpur are officially supported, but many Paper forks will likely work. CraftBukkit and modded hybrid servers (Arclight, Mohist, etc) are not supported.
 
 ### Why am I not appearing on the leaderboard? / How do I exclude op players from the leaderboard?
 
 The `auraskills.leaderboard.exclude` permission controls whether a player is shown on the leaderboard. This is `false` by default, but if a player has `auraskills.*` then that player will be excluded. Simply set this permission individually to `false` (want the player to show) or `true` (do not want the player to show.
+
+### My health keeps increasing and I can't remove it
+
+This issue is often caused by an incompatibility with minigame plugins and switching between worlds. Changing a few hp
+settings in `stats.yml` under `traits.auraskills/hp` may fix it:
+- Set `update_delay` to 1
+- Set `force_base_health` to true
+
+However, this will break plugins that modify the max_health attribute base value directly instead of using attribute
+modifiers.
+

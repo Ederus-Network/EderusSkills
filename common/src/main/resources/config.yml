@@ -60,6 +60,8 @@ hooks:
     prevent_regular_xp: false
   Nexo:
     enabled: true
+  packetevents:
+    enabled: true
 action_bar:
   enabled: true
   idle: true
@@ -155,6 +157,7 @@ enable_roman_numerals: false
 damage_holograms:
   enabled: true
   scaling: true
+  min_damage: 0.1
   decimal:
     display_when_less_than: 1
     max_amount: 1
@@ -283,6 +286,8 @@ automatic_backups:
   enabled: true
   minimum_interval_hours: 24
   max_users: 50000
+  delete_old_backups: false
+  delete_older_than_days: 7
 save_blank_profiles: false
 experimental:
   optimize_leaderboard_updating: false
