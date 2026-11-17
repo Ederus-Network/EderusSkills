@@ -136,6 +136,8 @@ public class UpdateChecker {
 
     @VisibleForTesting
     public boolean isOutdated(String localVersion, String resourceVersion) {
+        // Ederus: nuestro sufijo (2.4.0-ederus1) no cuenta, se compara solo la version del original.
+        localVersion = localVersion.replaceAll("(?i)-ederus\\d*$", "");
         if (localVersion.equalsIgnoreCase(resourceVersion)) { // Versions match exactly
             return false;
         }
